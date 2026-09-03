@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>영어 본문 암기장</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f4f6fb;--card:#fff;--text:#18202a;--muted:#687386;
+  --primary:#4f46e5;--primary2:#6366f1;--line:#e5e7eb;
+  --good:#16a34a;--bad:#dc2626;
+}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif}
+button{font:inherit}
+.app{max-width:760px;margin:auto;padding:18px 14px 40px}
+header{padding:8px 2px 16px}
+h1{font-size:25px;margin:0 0 6px}
+.subtitle{color:var(--muted);font-size:14px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.tab{border:0;background:#e8eaf2;color:#586174;border-radius:13px;padding:13px 8px;font-weight:700;cursor:pointer}
+.tab.active{background:var(--primary);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(30,41,59,.04)}
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.control{border:1px solid var(--line);background:#fafafa;border-radius:12px;padding:11px 4px;font-size:13px;font-weight:700;cursor:pointer;text-align:center}
+.control.active{border-color:var(--primary);background:#eef2ff;color:var(--primary)}
+
+.sub-options{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);flex-direction:column;gap:10px}
+.sub-options.show{display:flex}
+
+.difficulty-btns{display:flex;gap:6px;width:100%}
+.diff-btn{flex:1;border:1px solid var(--line);background:#fff;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+.diff-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+.blank-actions{display:flex;gap:6px;width:100%}
+.blank-act-btn{flex:1;border:1px solid var(--line);background:#f8fafc;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;color:#334155}
+.blank-act-btn:hover{background:#e2e8f0}
+
+.title{font-size:19px;font-weight:800;margin-bottom:4px}
+.mode-note{font-size:12px;color:var(--muted);margin-bottom:12px}
+.passage{font-size:17px;line-height:1.95;letter-spacing:-.1px}
+.sentence{margin:0 0 12px;padding:12px;border-radius:12px;background:#fafafa;border:1px solid #f0f0f0;transition:.2s;position:relative}
+.sentence.clickable{cursor:pointer}
+.sentence.clickable:hover{border-color:#c7d2fe;background:#f5f3ff}
+.sentence.current{background:#f5f3ff;border-color:var(--primary);box-shadow:0 0 0 2px #c7d2fe}
+.sentence-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.audio-btn{background:#e0e7ff;border:0;color:#3730a3;border-radius:6px;padding:4px 9px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.audio-btn:hover{background:#c7d2fe}
+
+.word{display:inline-block;cursor:pointer;border-radius:5px;padding:0 2px}
+.word.hidden{background:#303746;color:transparent;min-width:32px;margin:0 2px;user-select:none}
+.word.hidden:hover{background:#4b5563}
+
+.quiz-sentence-box{margin-top:6px}
+.quiz-input-field{width:100%;border:2px solid var(--primary);border-radius:10px;padding:10px 12px;font-size:16px;margin-top:10px;outline:none}
+.quiz-display{font-size:17px;line-height:1.9;margin-top:6px;word-break:break-word}
+.quiz-display .char-done{color:var(--text);font-weight:700}
+.quiz-display .char-pending{color:#9ca3af;background:#e5e7eb;border-radius:3px;padding:0 1px}
+.quiz-display .tutorial-pending{color:#d1d5db;border-bottom:1px dashed #9ca3af}
+.quiz-display .punct{color:var(--text);font-weight:700;padding:0 1px}
+
+.speech-box{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.speech-btn{background:var(--primary);color:#fff;border:0;padding:10px 14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.speech-btn.recording{background:var(--bad);animation:pulse 1.5s infinite}
+
+@keyframes pulse {
+  0%{opacity:1}
+  50%{opacity:0.6}
+  100%{opacity:1}
+}
+
+.toggle{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer;user-select:none}
+.toggle input{display:none}
+.checkmark{width:20px;height:20px;border:2px solid #cbd5e1;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:transparent;font-size:12px}
+.toggle input:checked + .checkmark{background:var(--primary);border-color:var(--primary);color:#fff}
+
+.feedback{min-height:22px;font-size:13px;font-weight:800;margin-top:6px}
+
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}
+.stat{background:#f8fafc;border-radius:12px;padding:11px;text-align:center}
+.stat b{display:block;font-size:18px}.stat span{font-size:11px;color:var(--muted)}
+
+@media(max-width:430px){
+  .app{padding:14px 10px 40px}
+  h1{font-size:22px}.passage{font-size:16px;line-height:1.9}
+  .card{padding:13px;border-radius:15px}
+  .controls{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <h1>📚 영어 본문 암기장</h1>
+  <div class="subtitle">시험기간용 · 1과 / 2과 본문 완벽 암기 솔루션</div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="selectLesson(0)">1과<br><small>A Band United by a Name</small></button>
+  <button class="tab" onclick="selectLesson(1)">2과<br><small>Bringing New Life to Old Cities</small></button>
+</div>
+
+<div class="card">
+  <div class="controls">
+    <button class="control active" onclick="setMode('read')">전체 보기</button>
+    <button class="control" onclick="setMode('blank')">단어 가리기</button>
+    <button class="control" onclick="setMode('quiz')">암기 퀴즈</button>
+    <button class="control" onclick="setMode('speech')">음성 암기</button>
+  </div>
+
+  <!-- 단어 가리기 옵션 및 액션 버튼 -->
+  <div class="sub-options" id="blankOptions">
+    <div class="difficulty-btns">
+      <button class="diff-btn" onclick="setDifficulty('easy')" id="diff-easy">Easy (문장당 핵심 3개)</button>
+      <button class="diff-btn" onclick="setDifficulty('normal')" id="diff-normal">Normal (주요 어휘)</button>
+      <button class="diff-btn" onclick="setDifficulty('hard')" id="diff-hard">Hard (전체 가림)</button>
+    </div>
+    <div class="blank-actions">
+      <button class="blank-act-btn" onclick="refreshBlank()">🔄 새로고침 (다시 가리기)</button>
+      <button class="blank-act-btn" onclick="revealAll()">👁️ 전체 공개</button>
+    </div>
+  </div>
+
+  <!-- 암기 퀴즈 / 음성 암기 옵션 -->
+  <div class="sub-options" id="quizOptions">
+    <label class="toggle">
+      <input type="checkbox" id="tutorialToggle" onchange="toggleTutorial(this.checked)">
+      <span class="checkmark">✓</span>
+      <span>튜토리얼 따라쓰기 / 따라말하기</span>
+    </label>
+  </div>
+</div>
+
+<div class="card">
+  <div class="title" id="lessonTitle"></div>
+  <div class="mode-note" id="modeNote"></div>
+  <div id="passage" class="passage"></div>
+
+  <div class="stats">
+    <div class="stat"><b id="totalWords">0</b><span>전체 단어</span></div>
+    <div class="stat"><b id="hiddenWords">0</b><span>가린 단어</span></div>
+  </div>
+</div>
+</div>
+
+<script>
+const lessons=[
+{
+title:"1과 : A Band United by a Name",
+text:`A missing hiker named Rene Compean was found safe on Tuesday by a rescue team in Angeles National Forest. It turns out that a photo played a key role in saving his life. Let's go over to Marissa Reynolds for more details on this story. Thank you, Thomas. I'm standing here at the entrance of Angeles National Forest. As you just heard, Rene Compean was recently rescued from this forest. Compean, an experienced hiker who knew the area well, went on a hike alone on April 12. However, a recent forest fire had destroyed some signs, which caused him to take a wrong turn and get lost. He tried shouting for help and even wrote SOS on the ground in case a plane or helicopter passed by. He had planned to hike for only about two hours, but night was coming. It started getting very windy and the temperature was dropping quickly. Compean was deep in the forest, so his cell phone couldn't get a signal. To make matters worse, its battery was nearly dead. He climbed up to a higher spot and found a weak signal. He used the last of his battery to send a text message to his friend. In the message, he said that he was lost and needed help. He also sent a picture to show his surroundings. Compean's friend shared the message and the picture with the local police. When the local police were informed of the missing hiker, they immediately sent a rescue team. Despite searching through the night, they still didn't have any idea where Compean was. In the picture, his legs were hanging over the edge of a canyon with rocks and green trees. His legs were covered in black ash from the recent forest fires. However, the picture didn't help the police much because the quality was poor due to the weak signal, and his location settings were turned off. As Compean had already spent one night in difficult conditions, the police worried about his spending a second night. So they decided to use social media to find out if anyone could find clues in the picture. They posted the picture and asked if anyone recognized the scenery. The picture shared by the police was seen by a Californian named Ben Kuo. One of his hobbies is examining satellite images to track forest fires and informing people of potential dangers. He also enjoys determining where pictures were taken and where movies were filmed. When he saw the picture of Compean, he was immediately interested. When Kuo saw the black ash on Compean's legs, it reminded him of a recent forest fire. This helped him to infer Compean's approximate location. Kuo was very familiar with the area because he had tracked the fire before and had checked the features of the area in satellite images. From the plants and trees in Compean's picture, Kuo guessed that it must be the south side of the mountain. The north side does not have any green valleys like those in the picture. As a final step, Kuo compared the view in Compean's picture with more satellite images. Finally, he found a match and provided the police with Compean's probable location. The police sent a rescue helicopter to the location and found Compean less than a mile away from the area indicated by Kuo. Thanks to Kuo's unusual skills, Compean was rescued unharmed. He later thanked Kuo on a video call. The local police are now reminding hikers who hike alone to inform others of their planned route and to always bring a paper map. This is Marissa Reynolds from LA. Now back to the studio.`
+},
+{
+title:"2과 : Bringing New Life to Old Cities",
+text:`Criminals never leave a crime scene without leaving behind traces of their presence. The traces might be tiny, like hairs, or more obvious, such as soil from their shoes. So detectives carefully collect all the possible evidence. Scientists then analyze everything and find some clues. The clues are used to find the person who committed the crime. This process is called forensic science. It has evolved thanks to the contributions of many researchers. One of the most important people in the development of modern forensic science was Frances Glessner Lee. Frances Glessner Lee was born into a rich family in Chicago in 1878. She became interested in medicine at a young age. Her dream was to attend Harvard Medical School, but, at that time, the school did not accept women. She had no choice but to get married. It was not until she was in her fifties that Lee was able to start a career in medicine. Lee heard many interesting stories of real-life crime from her friend, George Burgess Magrath. He was a medical examiner who wanted to change the investigation system. This was because, at that time, people with no medical knowledge investigated and closed many death cases without examining the bodies. He also had a passion for educating medical students in legal medicine. Magrath’s passion sparked Lee’s interest in legal medicine. Lee started studying legal medicine by reading books and speaking with experts. She believed that medical examiner systems would be adopted more widely across the country. Furthermore, she wanted to see more young medical students trained in legal medicine. She decided to devote the rest of her life to developing this field. In 1931, she persuaded Harvard University to use her fortune to make a new branch of study: legal medicine. She also helped set up a library with rare books and documents. She thought laws had to be changed so that medical examiners had independent power. Public support was needed to change laws, so she used the World’s Fair held from 1939 to 1940 to educate the public about the modern medical examiner system. She also visited the governor with the chairman of the Department of Legal Medicine at Harvard. They talked about the importance of legal medicine. Thanks to Lee’s efforts, the Legal Medicine department at Harvard began to train future medical examiners in 1940. However, detectives were not careful with potential evidence. By touching and stepping on things, they often destroyed clues without realizing it. Due to this fact, analyzing the clues later was impossible. Lee thought detectives also had to learn how to observe crime scenes from a medical point of view. In order to educate detectives effectively, Lee came up with a creative tool. Her idea came from her hobby: creating miniatures. She started creating miniatures of crime scenes that were highly detailed and accurate. Based on real criminal cases, they included details like blood stains. Lee did not miss even the smallest detail, such as a small lamp or a label on a jar. She wanted to train detectives to notice tiny clues. She created around twenty miniature scenes during the 1940s and 1950s. In 1945, she held a week-long seminar and gave her first lecture using her miniature crime scenes. While reading case files, the detectives studied the details of the miniature scenes. They looked for clues in order to determine if the scene in the miniature resulted from an accident or a violent crime. The detectives learned to notice tiny details and to observe a scene without destroying any evidence. By developing their observation skills, they were able to improve their ability to solve crime cases. Lee’s training process was successful. By 1949, the annual seminar was being attended by detectives not only from the US but also from Canada. Special agents and military staff also attended the seminar. Lee died in 1962, after a career of more than thirty years. Although she had struggled to enter the field, her contributions to forensic science were significant. It is no wonder that she was called the “mother of forensic science.”`
+}
+];
+
+const stopWords = new Set(["a","an","the","in","on","at","to","for","of","with","by","from","and","but","or","so","if","because","as","until","while","that","this","these","those","it","its","he","his","him","she","her","they","their","them","you","your","i","my","me","we","our","us","is","was","were","be","been","being","have","has","had","do","does","did","will","would","could","should","can","may","might"]);
+
+let lesson=0, mode="read", difficulty="normal", hidden=new Set(), activeSentenceIndex=0, quizTyped="", tutorial=false;
+let isRecording=false, recognition=null, speechResetTimer=null;
+
+const key="englishMemorizerState_v7";
+
+function save(){
+  localStorage.setItem(key,JSON.stringify({lesson,difficulty}));
+}
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem(key));
+    if(s){lesson=s.lesson||0; difficulty=s.difficulty||"normal";}
+  }catch(e){}
+}
+
+function getSentences(text){
+  return text.match(/[^.!?]+[.!?]+/g)||[text];
+}
+
+function speakText(text){
+  if('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'en-US';
+    utt.rate = 0.9;
+    window.speechSynthesis.speak(utt);
+  } else {
+    alert("이 브라우저는 음성 재생을 지원하지 않습니다.");
+  }
+}
+
+function computeHiddenWords(){
+  hidden.clear();
+  const data = lessons[lesson];
+  let wordIdx = 0;
+
+  getSentences(data.text).forEach(s => {
+    const wordList = s.trim().split(/\s+/);
+    
+    if(difficulty === "easy"){
+      let candidates = [];
+      wordList.forEach((w, localIdx) => {
+        const clean = w.replace(/[^a-zA-Z]/g, "").toLowerCase();
+        if(clean.length > 3 && !stopWords.has(clean)){
+          candidates.push(wordIdx + localIdx);
+        }
+      });
+      candidates.sort(() => Math.random() - 0.5);
+      candidates.slice(0, 3).forEach(idx => hidden.add(idx));
+      wordIdx += wordList.length;
+    } else {
+      wordList.forEach(w => {
+        const clean = w.replace(/[^a-zA-Z]/g, "").toLowerCase();
+        if(clean.length > 0){
+          if(difficulty === "hard"){
+            hidden.add(wordIdx);
+          } else if(difficulty === "normal"){
+            if(!stopWords.has(clean) || clean.length >= 6){
+              hidden.add(wordIdx);
+            }
+          }
+        }
+        wordIdx++;
+      });
+    }
+  });
+}
+
+function refreshBlank(){
+  computeHiddenWords();
+  render();
+}
+
+function render(){
+  const data = lessons[lesson];
+  document.getElementById("lessonTitle").textContent = data.title;
+  document.querySelectorAll(".tab").forEach((b,i)=>b.classList.toggle("active",i===lesson));
+  
+  const box = document.getElementById("passage");
+  box.innerHTML = "";
+  
+  const sentences = getSentences(data.text);
+  let globalWordIdx = 0;
+
+  sentences.forEach((sText, sIdx) => {
+    const sTrimmed = sText.trim();
+    const sDiv = document.createElement("div");
+    
+    let classList = "sentence";
+    if(mode === "quiz" || mode === "speech"){
+      classList += " clickable";
+      if(sIdx === activeSentenceIndex) classList += " current";
+      sDiv.onclick = (e) => {
+        if(e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
+        activeSentenceIndex = sIdx;
+        quizTyped = "";
+        stopSpeechRecognition();
+        render();
+      };
+    }
+    sDiv.className = classList;
+
+    if(mode === "read"){
+      const sHeader = document.createElement("div");
+      sHeader.className = "sentence-header";
+      sHeader.innerHTML = `<span style="font-size:12px;color:var(--muted);font-weight:700;">Sentence ${sIdx+1}</span>
+        <button class="audio-btn" onclick="speakText(\`${sTrimmed.replace(/'/g, "\\'")}\`)">🔊 원어민 발음 듣기</button>`;
+      sDiv.appendChild(sHeader);
+    }
+
+    if(mode === "read" || mode === "blank"){
+      const p = document.createElement("div");
+      sTrimmed.split(/(\s+)/).forEach(part => {
+        if(/^\s+$/.test(part)){ p.append(part); return; }
+        const wSpan = document.createElement("span");
+        wSpan.className = "word";
+        const wIdx = globalWordIdx;
+        wSpan.textContent = part;
+        if(mode === "blank" && hidden.has(wIdx)){
+          wSpan.classList.add("hidden");
+        }
+        wSpan.onclick = () => {
+          if(mode === "blank"){
+            if(hidden.has(wIdx)) hidden.delete(wIdx);
+            else hidden.add(wIdx);
+            render();
+          }
+        };
+        p.appendChild(wSpan);
+        globalWordIdx++;
+      });
+      sDiv.appendChild(p);
+    } 
+    else if(mode === "quiz"){
+      if(sIdx === activeSentenceIndex){
+        const quizBox = document.createElement("div");
+        quizBox.className = "quiz-sentence-box";
+
+        const displayDiv = document.createElement("div");
+        displayDiv.className = "quiz-display";
+        displayDiv.innerHTML = generateDisplayHTML(sTrimmed, quizTyped);
+
+        const input = document.createElement("input");
+        input.className = "quiz-input-field";
+        input.placeholder = "쉼표/마침표를 제외하고 타이핑하세요...";
+        input.value = quizTyped;
+        input.autocomplete = "off";
+        input.autocapitalize = "off";
+        input.spellcheck = false;
+
+        const fb = document.createElement("div");
+        fb.className = "feedback";
+        fb.id = "quizFeedback";
+
+        input.oninput = (e) => handleQuizInput(e.target.value, sTrimmed);
+
+        quizBox.appendChild(displayDiv);
+        quizBox.appendChild(input);
+        quizBox.appendChild(fb);
+        sDiv.appendChild(quizBox);
+
+        setTimeout(() => input.focus(), 50);
+      } else {
+        sDiv.innerHTML = `<div style="font-size:15px;color:var(--text);">${escapeHtml(sTrimmed)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">💡 클릭하여 이 문장 암기하기</div>`;
+      }
+    }
+    else if(mode === "speech"){
+      if(sIdx === activeSentenceIndex){
+        const speechBox = document.createElement("div");
+        speechBox.className = "speech-box";
+
+        const displayDiv = document.createElement("div");
+        displayDiv.className = "quiz-display";
+        displayDiv.innerHTML = generateDisplayHTML(sTrimmed, quizTyped);
+
+        const btn = document.createElement("button");
+        btn.className = "speech-btn" + (isRecording ? " recording" : "");
+        btn.innerHTML = isRecording ? "🎙️ AI 음성 인식 중... (클릭 시 중지)" : "🎙️ 말하기 시작";
+        btn.onclick = () => toggleSpeechRecognition(sTrimmed);
+
+        const fb = document.createElement("div");
+        fb.className = "feedback";
+        fb.id = "speechFeedback";
+
+        speechBox.appendChild(displayDiv);
+        speechBox.appendChild(btn);
+        speechBox.appendChild(fb);
+        sDiv.appendChild(speechBox);
+      } else {
+        sDiv.innerHTML = `<div style="font-size:15px;color:var(--text);">${escapeHtml(sTrimmed)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">💡 클릭하여 이 문장 음성 암기하기</div>`;
+      }
+    }
+
+    box.appendChild(sDiv);
+  });
+
+  document.getElementById("blankOptions").classList.toggle("show", mode==="blank");
+  document.getElementById("quizOptions").classList.toggle("show", mode==="quiz" || mode==="speech");
+  
+  ["easy","normal","hard"].forEach(d => {
+    const btn = document.getElementById(`diff-${d}`);
+    if(btn) btn.classList.toggle("active", difficulty===d);
+  });
+
+  document.getElementById("modeNote").textContent =
+    mode==="read" ? "문장별 [듣기] 버튼을 눌러 원어민 발음을 들어보세요." :
+    mode==="blank" ? "난이도에 따라 가려진 핵심 단어를 확인하며 외워보세요." :
+    mode==="quiz" ? "쉼표나 마침표는 가려지지 않습니다. 단어를 입력해 암기하세요." :
+    "원하는 문장을 클릭하고 마이크로 직접 말하면서 음성으로 암기하세요. (3초간 묵음 시 자동 초기화)";
+
+  document.getElementById("totalWords").textContent = globalWordIdx || document.querySelectorAll(".word").length;
+  document.getElementById("hiddenWords").textContent = hidden.size;
+  
+  document.querySelectorAll(".control").forEach((b,i)=>b.classList.toggle("active",["read","blank","quiz","speech"][i]===mode));
+}
+
+function generateDisplayHTML(targetText, typedText){
+  let html = "";
+  let typedIdx = 0;
+
+  for(let i = 0; i < targetText.length; i++){
+    const ch = targetText[i];
+    if(/[^a-zA-Z0-9\s]/.test(ch)){
+      html += `<span class="punct">${escapeHtml(ch)}</span>`;
+    } else {
+      const isDone = typedIdx < typedText.length;
+      if(tutorial){
+        html += `<span class="${isDone ? "char-done" : "tutorial-pending"}">${escapeHtml(ch)}</span>`;
+      } else {
+        if(ch === " ") html += " ";
+        else if(isDone) html += `<span class="char-done">${escapeHtml(ch)}</span>`;
+        else html += `<span class="char-pending">□</span>`;
+      }
+      if(ch !== " ") typedIdx++;
+    }
+  }
+  return html;
+}
+
+function handleQuizInput(val, targetText){
+  const cleanTarget = targetText.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  const cleanInput = val.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+
+  let correct = 0;
+  while(correct < cleanInput.length && correct < cleanTarget.length && cleanInput[correct] === cleanTarget[correct]){
+    correct++;
+  }
+
+  const fb = document.getElementById("quizFeedback");
+  if(correct < cleanInput.length){
+    if(fb){
+      fb.textContent = "❌ 틀린 글자가 있습니다.";
+      fb.style.color = "var(--bad)";
+    }
+    quizTyped = cleanInput.slice(0, correct);
+    val = quizTyped;
+  } else {
+    if(fb) fb.textContent = "";
+    quizTyped = cleanInput;
+  }
+
+  if(quizTyped.length === cleanTarget.length){
+    if(fb){
+      fb.textContent = "🎉 통과! 다음 문장으로 이동합니다.";
+      fb.style.color = "var(--good)";
+    }
+    setTimeout(() => {
+      quizTyped = "";
+      const maxSentences = getSentences(lessons[lesson].text).length;
+      if(activeSentenceIndex < maxSentences - 1){
+        activeSentenceIndex++;
+      } else {
+        activeSentenceIndex = 0;
+      }
+      render();
+    }, 600);
+  } else {
+    renderDisplayOnly(targetText, "quiz-display");
+  }
+}
+
+function toggleSpeechRecognition(targetText){
+  if(isRecording){
+    stopSpeechRecognition();
+  } else {
+    startSpeechRecognition(targetText);
+  }
+}
+
+function resetSpeechTimer(targetText){
+  if(speechResetTimer) clearTimeout(speechResetTimer);
+  speechResetTimer = setTimeout(() => {
+    if(isRecording && quizTyped.length > 0){
+      quizTyped = "";
+      renderDisplayOnly(targetText, "quiz-display");
+      const fb = document.getElementById("speechFeedback");
+      if(fb){
+        fb.textContent = "⏳ 3초간 입력이 없어 인식된 문자가 초기화되었습니다.";
+        fb.style.color = "var(--bad)";
+      }
+    }
+  }, 3000);
+}
+
+function startSpeechRecognition(targetText){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    alert("이 브라우저는 AI 음성 인식을 지원하지 않습니다. (Chrome 브라우저 추천)");
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.interimResults = true;
+  recognition.continuous = true;
+
+  recognition.onstart = () => {
+    isRecording = true;
+    render();
+  };
+
+  recognition.onresult = (e) => {
+    let transcript = "";
+    for(let i = e.resultIndex; i < e.results.length; i++){
+      transcript += e.results[i][0].transcript;
+    }
+    
+    const cleanTranscript = transcript.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+    const cleanTarget = targetText.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+
+    let matchedLen = 0;
+    while(matchedLen < cleanTranscript.length && matchedLen < cleanTarget.length){
+      if(cleanTranscript[matchedLen] === cleanTarget[matchedLen]){
+        matchedLen++;
+      } else break;
+    }
+
+    if(matchedLen > 0){
+      quizTyped = cleanTarget.slice(0, matchedLen);
+      resetSpeechTimer(targetText);
+    }
+
+    const fb = document.getElementById("speechFeedback");
+    if(fb){
+      fb.textContent = `🎙️ 인식 중: "${transcript}"`;
+      fb.style.color = "var(--primary)";
+    }
+
+    if(matchedLen >= cleanTarget.length){
+      if(speechResetTimer) clearTimeout(speechResetTimer);
+      stopSpeechRecognition();
+      if(fb){
+        fb.textContent = "🎉 음성 암기 성공! 다음 문장으로 이동합니다.";
+        fb.style.color = "var(--good)";
+      }
+      setTimeout(() => {
+        quizTyped = "";
+        const maxSentences = getSentences(lessons[lesson].text).length;
+        if(activeSentenceIndex < maxSentences - 1){
+          activeSentenceIndex++;
+        } else {
+          activeSentenceIndex = 0;
+        }
+        render();
+      }, 800);
+    } else {
+      renderDisplayOnly(targetText, "quiz-display");
+    }
+  };
+
+  recognition.onerror = (e) => {
+    console.error(e.error);
+    stopSpeechRecognition();
+  };
+
+  recognition.onend = () => {
+    isRecording = false;
+    if(speechResetTimer) clearTimeout(speechResetTimer);
+    render();
+  };
+
+  recognition.start();
+}
+
+function stopSpeechRecognition(){
+  if(speechResetTimer) clearTimeout(speechResetTimer);
+  if(recognition){
+    recognition.stop();
+    recognition = null;
+  }
+  isRecording = false;
+}
+
+function renderDisplayOnly(targetText, className){
+  const displayDiv = document.querySelector(`.${className}`);
+  if(!displayDiv) return;
+  displayDiv.innerHTML = generateDisplayHTML(targetText, quizTyped);
+}
+
+function escapeHtml(str){
+  return str.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+
+function setMode(m){ 
+  stopSpeechRecognition();
+  mode = m; 
+  quizTyped = "";
+  if(mode === "blank") computeHiddenWords();
+  render(); 
+}
+
+function setDifficulty(d){ 
+  difficulty = d; 
+  save(); 
+  computeHiddenWords(); 
+  render(); 
+}
+
+function selectLesson(i){ 
+  stopSpeechRecognition();
+  lesson = i; 
+  activeSentenceIndex = 0;
+  quizTyped = "";
+  save(); 
+  if(mode === "blank") computeHiddenWords();
+  render(); 
+}
+
+function revealAll(){ hidden.clear(); render(); }
+
+function toggleTutorial(val){ tutorial = val; render(); }
+
+load();
+computeHiddenWords();
+render();
+</script>
+</body>
+</html>
